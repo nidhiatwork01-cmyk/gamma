@@ -97,32 +97,118 @@ src/
     └── ...
 ```
 
-**Design Principles:**
-- Swappable layers (DB/AI providers)
-- Reusable service layer
-- Type-safe validation
-- Stateless API endpoints
+---
+
+## Architecture & Design
+
+### Design Principles
+
+**Portability**
+- Service layer decoupled from UI/API
+- Database provider agnostic (swap ORM, use MongoDB, etc.)
+- AI provider configurable (Groq → OpenAI → Claude easily)
+- Deterministic fallbacks (works without AI)
+
+**UX Principles**
+- Fast dashboard with client-side filtering
+- Instant feedback (optimistic updates planned)
+- Clear information hierarchy (list → detail → full content)
+- Mobile-responsive design (Tailwind responsive classes)
+
+**Infrastructure**
+- Serverless-ready (runs on Vercel, Netlify, AWS Lambda)
+- Edge-compatible (stateless API routes)
+- Cold-start optimized (minimal dependencies)
+- Database connection pooling (Neon/Supabase recommended)
+
+### Agent Thinking Pattern
+
+The system implements a "capture → enrich → query" loop:
+
+1. **Capture Phase** - Form submission captures title, content, type, URL
+2. **Enrichment Phase** - AI generates summary and auto-tags (or falls back)
+3. **Storage Phase** - Prisma persists to PostgreSQL
+4. **Query Phase** - Search/filter surfaces relevant items
+5. **Response Phase** - Public API synthesizes answer from sources
+
+This keeps the knowledge flow explicit and cacheable.
+
+### Technology Rationale
+
+| Technology | Why |
+|-----------|-----|
+| **Next.js 16** | Full-stack, API routes, fast builds |
+| **React 19** | Modern hooks, better performance |
+| **Prisma** | Type-safe DB access, migrations |
+| **PostgreSQL** | Reliable, JSONB support for tags |
+| **Zod** | Runtime validation on API boundaries |
+| **Groq** | Fast LLM inference, free tier |
+| **Tailwind** | Utility-first, responsive, performant |
 
 ---
 
 ## Quick Start
 
+### Prerequisites
+- Node.js 20+ ([nodejs.org](https://nodejs.org))
+- PostgreSQL 14+ (Neon, Supabase, or local)
+- npm/yarn/pnpm
+
+### Local Setup (5 minutes)
+
 ```bash
-# 1. Install dependencies
+# 1. Clone repository
+git clone https://github.com/nidhiatwork01-cmyk/gamma.git
+cd gamma
+
+# 2. Install dependencies
 npm install
 
-# 2. Set up environment variables
+# 3. Configure environment
 cp .env.example .env
 # Edit .env with your database and API keys
 
-# 3. Sync database schema
+# 4. Sync database schema
+npm run db:generate
 npm run db:push
 
-# 4. Start development server
+# 5. Start development server
 npm run dev
 ```
 
-Visit `http://localhost:3000`
+Visit `http://localhost:3000` → Dashboard loads!
+
+### Database Setup
+
+**Option 1: Neon (Recommended - Free)**
+1. Sign up at [neon.tech](https://neon.tech)
+2. Create a project
+3. Copy connection string → `DATABASE_URL` and `DIRECT_URL` in `.env`
+
+**Option 2: Supabase**
+1. Create project at [supabase.com](https://supabase.com)
+2. Connection details in Project Settings → Database
+3. Update `.env`
+
+**Option 3: Local PostgreSQL**
+```bash
+# macOS (Homebrew)
+brew install postgresql
+brew services start postgresql
+
+# Linux (Ubuntu)
+sudo apt install postgresql postgresql-contrib
+sudo service postgresql start
+
+# Windows (Download from postgresql.org)
+```
+
+### First Run Checklist
+- [ ] Database connection working (`npm run db:push` succeeds)
+- [ ] GROQ API key set (or app works without it with fallback)
+- [ ] Dev server running (`npm run dev`)
+- [ ] Dashboard loads at localhost:3000
+- [ ] Can create a knowledge item
 
 ---
 
@@ -142,13 +228,29 @@ Visit `http://localhost:3000`
 
 ## Environment Variables
 
-Create a `.env` file:
+Create a `.env` file in the root directory:
 
 ```env
-DATABASE_URL=postgresql://user:password@host/dbname
+# Database
+DATABASE_URL=postgresql://user:password@host:port/dbname
+DIRECT_URL=postgresql://user:password@host:port/dbname
+
+# AI/LLM
 GROQ_API_KEY=your_groq_api_key
 GROQ_MODEL=llama-3.1-8b-instant
+# GROQ_BASE_URL=https://api.groq.com/openai/v1  # Optional
+
+# Environment
+NODE_ENV=development
 ```
+
+**For Local Development:**
+- Use a local PostgreSQL instance or Neon's free tier
+- Get `GROQ_API_KEY` from [console.groq.com](https://console.groq.com)
+
+**For Production (Vercel):**
+- Use Neon or Supabase for PostgreSQL
+- Same environment variables apply
 
 See `.env.example` for reference.
 
