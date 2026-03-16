@@ -1,64 +1,95 @@
-import Image from "next/image";
+import Link from "next/link";
+import { DashboardFilters } from "@/components/dashboard-filters";
+import { KnowledgeForm } from "@/components/knowledge-form";
+import { KnowledgeList } from "@/components/knowledge-list";
+import { PublicQueryWidget } from "@/components/public-query-widget";
+import { StatsCard } from "@/components/stats-card";
+import { listKnowledgeSchema } from "@/lib/knowledge-schema";
+import { getKnowledgeItems } from "@/lib/knowledge-service";
 
-export default function Home() {
+export const dynamic = "force-dynamic";
+
+type HomeProps = {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+};
+
+const asString = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value);
+
+const collectTags = (items: Array<{ tags: string[] }>) =>
+  [...new Set(items.flatMap((item) => item.tags))].sort((a, b) => a.localeCompare(b));
+
+export default async function Home({ searchParams }: HomeProps) {
+  const params = await searchParams;
+  const filters = {
+    q: asString(params.q),
+    type: asString(params.type),
+    tag: asString(params.tag),
+    sort: asString(params.sort),
+  };
+  const parsedFilters = listKnowledgeSchema.safeParse(filters);
+  const query = parsedFilters.success ? parsedFilters.data : { sort: "newest" as const };
+
+  let itemsResult: Awaited<ReturnType<typeof getKnowledgeItems>> = { items: [], total: 0 };
+  let loadError: string | null = null;
+
+  try {
+    itemsResult = await getKnowledgeItems(query);
+  } catch (error) {
+    loadError = `Could not load knowledge items. Verify DATABASE_URL and run prisma migration. ${
+      error instanceof Error ? error.message : ""
+    }`.trim();
+  }
+
+  const tags = collectTags(itemsResult.items);
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="pb-14">
+      <header className="border-b border-[#c9cedd] bg-[rgba(235,237,242,0.82)] backdrop-blur">
+        <div className="page-shell flex min-h-16 flex-wrap items-center justify-between gap-3 py-3">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.11em] text-[#5b6074]">Full-Stack AI Assignment</p>
+            <h1 className="mt-0.5 text-2xl font-semibold tracking-tight sm:text-3xl">Second Brain App</h1>
+          </div>
+          <nav className="flex items-center gap-4 text-sm text-[#41465a]">
+            <Link href="/" className="font-semibold hover:underline">
+              Dashboard
+            </Link>
+            <Link href="/docs" className="font-semibold hover:underline">
+              Docs
+            </Link>
+            <a href="/api/public/brain/query?question=What%20is%20in%20this%20knowledge%20base" className="font-semibold hover:underline">
+              Public API
+            </a>
+          </nav>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+      </header>
+
+      <main className="page-shell mt-8 grid grid-cols-1 gap-6 xl:grid-cols-[0.95fr_1.25fr]">
+        <section className="space-y-5">
+          <KnowledgeForm />
+          <PublicQueryWidget />
+        </section>
+
+        <section className="space-y-5">
+          <article className="surface-card p-5 sm:p-6">
+            <p className="pill">Smart Dashboard</p>
+            <h2 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">Search, Filter, Analyze</h2>
+            <p className="muted mt-2 max-w-3xl leading-7">
+              Browse every knowledge item with fast filtering by type and tags. Each entry includes AI-generated summary
+              and auto-tags, with a dedicated detail page for deep review.
+            </p>
+          </article>
+
+          <StatsCard items={itemsResult.items} total={itemsResult.total} />
+
+          <DashboardFilters items={itemsResult.items} total={itemsResult.total} query={query} tags={tags} />
+
+          {loadError ? (
+            <article className="rounded-xl border border-[#d0a2af] bg-[#fce7ed] p-4 text-sm text-[#7b2d42]">{loadError}</article>
+          ) : null}
+
+          <KnowledgeList items={itemsResult.items} />
+        </section>
       </main>
     </div>
   );

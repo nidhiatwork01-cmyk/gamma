@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Temporary scaffolding folder kept in workspace:
+    "gamma-app/**",
   ]),
 ]);
 

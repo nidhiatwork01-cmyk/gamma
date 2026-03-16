@@ -1,36 +1,73 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Second Brain (Full-Stack Assignment Build)
 
-## Getting Started
+Production-style implementation of the internship assignment:
 
-First, run the development server:
+- Full-stack app with capture + dashboard + detail views
+- PostgreSQL persistence through Prisma
+- AI enrichment (summary + auto-tags) on ingestion
+- Public query endpoint: `GET /api/public/brain/query`
+- Documentation page: `/docs`
+
+## 1) Stack
+
+- Next.js 16 (App Router), React 19, Tailwind v4
+- Prisma ORM + PostgreSQL
+- Zod validation on API boundaries
+- Server-side AI calls via Groq
+
+## 2) Data Model
+
+`KnowledgeItem` fields:
+
+- `id`, `title`, `content`
+- `type` (`NOTE | LINK | INSIGHT`)
+- `sourceUrl` (optional)
+- `tags` (`string[]`)
+- `summary` (AI-generated or fallback)
+- `createdAt`, `updatedAt`
+
+## 3) API
+
+- `GET /api/knowledge`
+  - Query params: `q`, `type`, `tag`, `sort`
+- `POST /api/knowledge`
+  - Payload: `{ title, content, type, sourceUrl?, tagsInput? }`
+- `GET /api/knowledge/:id`
+- `GET /api/public/brain/query?question=...`
+  - Returns `{ question, answer, sources[] }`
+
+## 4) Architecture Notes
+
+- `src/lib/knowledge-service.ts`: core domain logic (create/list/query ranking)
+- `src/lib/ai.ts`: AI summarization/tagging and query synthesis with deterministic fallback
+- `src/lib/knowledge-schema.ts`: input validation + tag parsing
+- `src/app/api/*`: HTTP interface layer
+- `src/app/*`: app screens
+
+This keeps layers swappable:
+
+- Replace DB provider without changing UI/API contract
+- Replace AI provider by editing one adapter (`src/lib/ai.ts`)
+- Reuse public endpoint for external widgets/clients
+
+## 5) Features
+
+- Knowledge capture via dashboard form
+- Smart dashboard with search/filter/sort
+- Detail page for individual items
+- AI summarization & auto-tagging
+- Conversational query endpoint
+- Public API for external widgets
+- Documentation page at `/docs`
+
+## 6) Commands
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev          # Start dev server
+npm run build        # Production build
+npm run lint         # Lint code
+npm run db:generate  # Generate Prisma client
+npm run db:push      # Push schema to database
+npm run db:studio    # Open Prisma Studio
 ```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
