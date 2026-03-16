@@ -1,73 +1,182 @@
-# Second Brain (Full-Stack Assignment Build)
+# Second Brain
 
-Production-style implementation of the internship assignment:
+### Production-Style Full-Stack Knowledge Management System
 
-- Full-stack app with capture + dashboard + detail views
-- PostgreSQL persistence through Prisma
-- AI enrichment (summary + auto-tags) on ingestion
-- Public query endpoint: `GET /api/public/brain/query`
-- Documentation page: `/docs`
+![Node.js](https://img.shields.io/badge/Node.js-20+-43853D?style=for-the-badge&logo=node.js)
+![Next.js](https://img.shields.io/badge/Next.js-16-000000?style=for-the-badge&logo=next.js)
+![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=for-the-badge&logo=typescript)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-336791?style=for-the-badge&logo=postgresql)
+![Prisma](https://img.shields.io/badge/Prisma-ORM-2D3748?style=for-the-badge&logo=prisma)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind-CSS-06B6D4?style=for-the-badge&logo=tailwindcss)
 
-## 1) Stack
+---
 
-- Next.js 16 (App Router), React 19, Tailwind v4
-- Prisma ORM + PostgreSQL
-- Zod validation on API boundaries
-- Server-side AI calls via Groq
+## About
 
-## 2) Data Model
+A comprehensive **knowledge management system** with AI-powered enrichment. Capture, organize, and query your knowledge with semantic search and intelligent tagging.
 
-`KnowledgeItem` fields:
+### Key Features
+- **Knowledge Capture** - Dashboard form for adding notes, links, and insights
+- **Smart Dashboard** - Search, filter, sort with full-text query support
+- **AI Enrichment** - Automatic summarization and intelligent tagging
+- **Public API** - Shareable query endpoint for external widgets
+- **Documentation** - Built-in docs page at `/docs`
 
-- `id`, `title`, `content`
-- `type` (`NOTE | LINK | INSIGHT`)
-- `sourceUrl` (optional)
-- `tags` (`string[]`)
-- `summary` (AI-generated or fallback)
-- `createdAt`, `updatedAt`
+---
 
-## 3) API
+## Tech Stack
 
-- `GET /api/knowledge`
-  - Query params: `q`, `type`, `tag`, `sort`
-- `POST /api/knowledge`
-  - Payload: `{ title, content, type, sourceUrl?, tagsInput? }`
-- `GET /api/knowledge/:id`
-- `GET /api/public/brain/query?question=...`
-  - Returns `{ question, answer, sources[] }`
+| Layer | Technology |
+|-------|-----------|
+| **Frontend** | Next.js 16, React 19, Tailwind v4 |
+| **Backend** | Next.js API Routes, Node.js |
+| **Database** | PostgreSQL, Prisma ORM |
+| **Validation** | Zod (input boundaries) |
+| **AI** | Groq (LLM for summaries & tags) |
+| **Deployment** | Vercel |
 
-## 4) Architecture Notes
+---
 
-- `src/lib/knowledge-service.ts`: core domain logic (create/list/query ranking)
-- `src/lib/ai.ts`: AI summarization/tagging and query synthesis with deterministic fallback
-- `src/lib/knowledge-schema.ts`: input validation + tag parsing
-- `src/app/api/*`: HTTP interface layer
-- `src/app/*`: app screens
+## Data Model
 
-This keeps layers swappable:
+Each `KnowledgeItem` contains:
 
-- Replace DB provider without changing UI/API contract
-- Replace AI provider by editing one adapter (`src/lib/ai.ts`)
-- Reuse public endpoint for external widgets/clients
+```typescript
+{
+  id: string              // Unique identifier
+  title: string           // Item title
+  content: string         // Full content
+  type: "NOTE" | "LINK" | "INSIGHT"
+  sourceUrl?: string      // Optional source URL
+  tags: string[]          // Auto-generated tags
+  summary: string         // AI-generated or fallback
+  createdAt: Date
+  updatedAt: Date
+}
+```
 
-## 5) Features
+---
 
-- Knowledge capture via dashboard form
-- Smart dashboard with search/filter/sort
-- Detail page for individual items
-- AI summarization & auto-tagging
-- Conversational query endpoint
-- Public API for external widgets
-- Documentation page at `/docs`
+## API Endpoints
 
-## 6) Commands
+### Knowledge Management
+- `GET /api/knowledge` - List all items
+  - Query: `q`, `type`, `tag`, `sort`
+- `POST /api/knowledge` - Create new item
+  - Body: `{ title, content, type, sourceUrl?, tagsInput? }`
+- `GET /api/knowledge/:id` - Get specific item
+
+### Public Interface
+- `GET /api/public/brain/query?question=...` - Conversational query
+  - Response: `{ question, answer, sources[] }`
+
+---
+
+## Architecture
+
+```
+src/
+├── lib/
+│   ├── knowledge-service.ts    # Domain logic (CRUD, ranking)
+│   ├── ai.ts                   # AI adapters (summarization, tagging)
+│   ├── knowledge-schema.ts      # Zod validation schemas
+│   ├── knowledge-constants.ts   # Type definitions
+│   └── prisma.ts               # Database client
+├── app/
+│   ├── api/                    # HTTP interface
+│   │   ├── knowledge/
+│   │   └── public/brain/query/
+│   ├── knowledge/[id]/         # Detail page
+│   ├── docs/                   # Documentation
+│   └── page.tsx                # Dashboard (home)
+└── components/                 # React components
+    ├── knowledge-form.tsx
+    ├── knowledge-list.tsx
+    ├── dashboard-filters.tsx
+    └── ...
+```
+
+**Design Principles:**
+- Swappable layers (DB/AI providers)
+- Reusable service layer
+- Type-safe validation
+- Stateless API endpoints
+
+---
+
+## Quick Start
 
 ```bash
+# 1. Install dependencies
 npm install
-npm run dev          # Start dev server
-npm run build        # Production build
-npm run lint         # Lint code
-npm run db:generate  # Generate Prisma client
-npm run db:push      # Push schema to database
-npm run db:studio    # Open Prisma Studio
+
+# 2. Set up environment variables
+cp .env.example .env
+# Edit .env with your database and API keys
+
+# 3. Sync database schema
+npm run db:push
+
+# 4. Start development server
+npm run dev
 ```
+
+Visit `http://localhost:3000`
+
+---
+
+## Available Commands
+
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start dev server (port 3000) |
+| `npm run build` | Production build |
+| `npm start` | Start production server |
+| `npm run lint` | Run ESLint |
+| `npm run db:generate` | Generate Prisma client |
+| `npm run db:push` | Push schema to database |
+| `npm run db:studio` | Open Prisma Studio GUI |
+
+---
+
+## Environment Variables
+
+Create a `.env` file:
+
+```env
+DATABASE_URL=postgresql://user:password@host/dbname
+GROQ_API_KEY=your_groq_api_key
+GROQ_MODEL=llama-3.1-8b-instant
+```
+
+See `.env.example` for reference.
+
+---
+
+## Deployment
+
+### Deploy to Vercel (Recommended)
+
+1. Push code to GitHub
+2. Go to [vercel.com](https://vercel.com) → **Add New Project**
+3. Import your repository
+4. Add environment variables in **Settings** → **Environment Variables**:
+   - `DATABASE_URL`
+   - `GROQ_API_KEY`
+   - `GROQ_MODEL`
+5. Click **Deploy**
+
+Your app is live!
+
+---
+
+## License
+
+MIT - Feel free to use for personal or commercial projects
+
+---
+
+## Contributing
+
+Bug reports and feature requests welcome! Open an issue or submit a pull request.
