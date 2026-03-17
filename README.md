@@ -264,6 +264,9 @@ See `.env.example` for reference.
 
 ## Deployment
 
+### 🎯 Current Deployment
+**Live at:** https://gamma-wheat-eight.vercel.app/
+
 ### Deploy to Vercel (Recommended)
 
 1. Push code to GitHub
