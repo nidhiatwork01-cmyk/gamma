@@ -114,6 +114,26 @@ a {
   color: #a5abbe;
 }
 
+/* Dark theme input fields */
+.surface-dark .field,
+input[class*="!bg-\[#1f2438\]"] {
+  background: #1f2438 !important;
+  color: #ecf0ff !important;
+  border-color: #5e6484 !important;
+}
+
+.surface-dark .field::placeholder,
+input[class*="!bg-\[#1f2438\]"]::placeholder {
+  color: #9ca2be !important;
+}
+
+.surface-dark .field:focus-visible,
+input[class*="!bg-\[#1f2438\]"]:focus-visible {
+  background: #2a2e41 !important;
+  border-color: #7b85a1 !important;
+  box-shadow: 0 0 0 3px rgba(123, 133, 161, 0.15), inset 0 0 0 3px rgba(123, 133, 161, 0.05) !important;
+}
+
 .btn-primary {
   border: 1px solid transparent;
   background: linear-gradient(135deg, #171a2d 0%, #2a2e41 100%);

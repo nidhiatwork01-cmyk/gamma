@@ -21,6 +21,13 @@ const starterPrompts = [
   "What are the main product risks from my notes?",
   "Summarize what we know about onboarding friction.",
   "Which notes discuss architecture tradeoffs?",
+  "What are the key insights from my recent notes?",
+  "How should we handle the user feedback mentioned?",
+  "What best practices have been documented?",
+  "What are the critical issues to address?",
+  "Summarize the decision-making frameworks discussed.",
+  "What customer pain points have been identified?",
+  "Which solutions were recommended for our challenges?",
 ];
 
 export function PublicQueryWidget() {
