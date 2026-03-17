@@ -12,6 +12,12 @@
 
 ---
 
+## 🚀 Live Demo
+
+**[Try it now](https://gamma-wheat-eight.vercel.app/)** → https://gamma-wheat-eight.vercel.app/
+
+---
+
 ## About
 
 A comprehensive **knowledge management system** with AI-powered enrichment. Capture, organize, and query your knowledge with semantic search and intelligent tagging.
